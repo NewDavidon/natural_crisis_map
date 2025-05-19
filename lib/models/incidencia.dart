@@ -1,4 +1,6 @@
-// Representa un reporte de incidencia con todos sus datos
+// lib/models/incidencia.dart
+
+/// Representa un reporte de incidencia con todos sus datos
 class Incidencia {
   final String id;            // ID único (docId en Firestore o UUID en mock)
   final String titulo;        // Título breve de la incidencia

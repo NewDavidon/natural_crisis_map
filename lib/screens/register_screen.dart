@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -15,7 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _lastNameController  = TextEditingController();
   final _emailController     = TextEditingController();
   final _passwordController  = TextEditingController();
-  bool _isLoading = false;
+  bool _isLoading            = false;
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
@@ -27,7 +28,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
       );
-      // ✔ Ir al mapa tras registrarse
       Navigator.pushReplacementNamed(context, '/map');
     } catch (e) {
       _showError(e.toString());
@@ -63,8 +63,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(12);
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Regístrate')),
+      appBar: AppBar(title: const Text('Regístrate'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -74,13 +77,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(labelText: 'Nombre'),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Requerido' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(labelText: 'Apellidos'),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Requerido' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(

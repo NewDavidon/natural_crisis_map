@@ -23,7 +23,7 @@ dependencies:
 
   # Mapa
   flutter_map: ^4.0.0
-  latlong2: ^0.8.2   # <-- alineado con flutter_map ^4.0.0
+  latlong2: ^0.8.2   # alineado con flutter_map ^4.0.0
 
 dev_dependencies:
   flutter_test:

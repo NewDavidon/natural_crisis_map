@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -65,27 +64,25 @@ class _LoginScreenState extends State<LoginScreen> {
     final borderRadius = BorderRadius.circular(12);
 
     return Scaffold(
-        appBar: AppBar(
-            title: const Text('Iniciar sesión'),
-            centerTitle: true,            // ← fuerza a centrar el texto
-            titleSpacing: 0,              // ← opcional: quita el padding extra si lo deseas
-          ),
-        body: Center(
+      appBar: AppBar(
+        title: const Text('Iniciar sesión'),
+        centerTitle: true,
+        titleSpacing: 0,
+      ),
+      body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-              SvgPicture.asset(
-                'assets/images/logo.svg',  // Ruta exacta de tu asset
-                width: 170,                // Ajusta al tamaño deseado
-                height: 170,
-                semanticsLabel: 'Logo de la app',
-              ),
-
+                SvgPicture.asset(
+                  'assets/images/logo.svg',
+                  width: 170,
+                  height: 170,
+                  semanticsLabel: 'Logo de la app',
+                ),
                 const SizedBox(height: 52),
-
                 // Email
                 TextFormField(
                   controller: _emailController,
@@ -95,9 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: const Icon(Icons.email),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: borderRadius,
-                      borderSide: BorderSide(
-                        color: primaryColor.withOpacity(0.5),
-                      ),
+                      borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: borderRadius,
@@ -106,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Ingresa tu correo';
-                    if (kDebugMode && v == 'user') return null;     // depuración
+                    if (kDebugMode && v == 'user') return null; // depuración
                     final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                     if (!regex.hasMatch(v)) return 'Correo no válido';
                     return null;
@@ -122,9 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: const Icon(Icons.lock),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: borderRadius,
-                      borderSide: BorderSide(
-                        color: primaryColor.withOpacity(0.5),
-                      ),
+                      borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: borderRadius,
@@ -133,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                    if (kDebugMode && v == 'user') return null;     // depuración
+                    if (kDebugMode && v == 'user') return null; // depuración
                     if (v.length < 6) return 'Mínimo 6 caracteres';
                     return null;
                   },
@@ -144,10 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextButton(
                     onPressed: _isLoading
                         ? null
-                        : () => Navigator.pushNamed(
-                              context,
-                              '/forgot-password',
-                            ),
+                        : () => Navigator.pushNamed(context, '/forgot-password'),
                     child: const Text('¿Olvidaste tu contraseña?'),
                   ),
                 ),
@@ -159,8 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     child: _isLoading
-                        ? const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation(Colors.white))
+                        ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.white))
                         : const Text('Entrar'),
                   ),
                 ),

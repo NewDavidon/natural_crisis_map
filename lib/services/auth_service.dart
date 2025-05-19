@@ -9,18 +9,17 @@ class AuthService {
 
   /// Inicia sesión con email y contraseña.
   ///
-  /// ▸ **Modo debug con credenciales de prueba:**  
+  /// ▸ **Modo debug con credenciales de prueba:**  
   ///    Si compilas en `kDebugMode` y escribes `user / user`, la función
   ///    inicia sesión de forma anónima para no depender de la red
-  ///    mientras desarrollas. :contentReference[oaicite:0]{index=0}  
-  /// ▸ **Producción:** login real contra Firebase usando
-  ///   `signInWithEmailAndPassword`. :contentReference[oaicite:1]{index=1}
+  ///    mientras desarrollas.  
+  /// ▸ **Producción:** login real contra Firebase usando
+  ///   `signInWithEmailAndPassword`.
   Future<UserCredential> signIn(String email, String password) async {
     if (kDebugMode && email == 'demo@demo.com' && password == 'demodemo') {
-       return await _auth.signInAnonymously();
+      return await _auth.signInAnonymously();
     }
 
-    
     return await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -29,7 +28,7 @@ class AuthService {
 
   /// Registra un nuevo usuario con email y contraseña.
   /// Después del alta, actualiza opcionalmente el `displayName`
-  /// para que combine nombre y apellidos. :contentReference[oaicite:2]{index=2}
+  /// para que combine nombre y apellidos.
   Future<UserCredential> signUp(
     String email,
     String password, {

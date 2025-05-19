@@ -36,8 +36,7 @@ class MyApp extends StatelessWidget {
         '/login'           : (ctx) => const LoginScreen(),
         '/register'        : (ctx) => const RegisterScreen(),
         '/forgot-password' : (ctx) => const ForgotPasswordScreen(),
-        // <-- Aquí quitamos `const`
-        '/home'            : (ctx) => HomeScreen(),
+        //'/home'            : (ctx) => HomeScreen(),
         '/map'             : (ctx) => const MapScreen(),
         //'/new-incident'    : (ctx) => const NewIncidentScreen(),
       },
