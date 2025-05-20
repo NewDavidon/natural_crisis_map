@@ -9,6 +9,7 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/new_incident_screen.dart';
+import 'screens/filters_screen.dart';
 
 void main() async {
   // Asegura que Flutter esté inicializado antes de llamar a código asíncrono
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         //'/home'            : (ctx) => HomeScreen(),
         '/map'             : (ctx) => const MapScreen(),
         //'/new-incident'    : (ctx) => const NewIncidentScreen(),
+          '/filters'         : (ctx) => const FiltersScreen(),
       },
     );
   }

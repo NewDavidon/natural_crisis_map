@@ -92,7 +92,7 @@ class _MapScreenState extends State<MapScreen> {
                     customBorder: const CircleBorder(),
                     highlightColor: highlight,
                     onTap: () {
-                      // Acción futura
+                      Navigator.pushNamed(context, '/filters');
                     },
                     child: SizedBox(
                       width: buttonSize,
