@@ -9,11 +9,11 @@ class AuthService {
 
   /// Inicia sesión con email y contraseña.
   ///
-  /// ▸ **Modo debug con credenciales de prueba:**  
-  ///    Si compilas en `kDebugMode` y escribes `user / user`, la función
-  ///    inicia sesión de forma anónima para no depender de la red
-  ///    mientras desarrollas.  
-  /// ▸ **Producción:** login real contra Firebase usando
+  /// • Modo debug con credenciales de prueba:
+  ///   Si compilas en `kDebugMode` y escribes `demo@demo.com` / `demodemo`,
+  ///   la función inicia sesión de forma anónima para no depender de la red
+  ///   mientras desarrollas.
+  /// • Producción: login real contra Firebase usando
   ///   `signInWithEmailAndPassword`.
   Future<UserCredential> signIn(String email, String password) async {
     if (kDebugMode && email == 'demo@demo.com' && password == 'demodemo') {

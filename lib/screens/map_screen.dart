@@ -1,10 +1,13 @@
 // lib/screens/map_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import '../models/incidencia.dart';
+import '../models/tipo_incidencia.dart';
+import '../services/pending_incidents_service.dart';
+import 'incidencia_form_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -19,26 +22,27 @@ class _MapScreenState extends State<MapScreen> {
   bool _loadingLocation = true;
   String? _locError;
   LatLng? _currentCenter;
-
-  /// Marcador que el usuario añade con un tap
   LatLng? _selectedPosition;
+  List<Incidencia> _pendingIncidents = [];
 
   @override
   void initState() {
     super.initState();
     _determinePosition();
+    _loadPendingIncidents();
   }
 
+  /// Obtiene la posición actual con Geolocator y la guarda en `_currentCenter`.
   Future<void> _determinePosition() async {
     setState(() => _loadingLocation = true);
 
     try {
-      // 1) Verificar servicio GPS
+      // 1) Verificar si el servicio de ubicación está habilitado
       if (!await Geolocator.isLocationServiceEnabled()) {
         throw 'Servicios de ubicación deshabilitados';
       }
 
-      // 2) Solicitar permiso
+      // 2) Verificar/solicitar permisos
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
@@ -47,17 +51,17 @@ class _MapScreenState extends State<MapScreen> {
         }
       }
       if (perm == LocationPermission.deniedForever) {
-        throw 'Permiso denegado permanentemente';
+        throw 'Permiso de ubicación denegado permanentemente';
       }
 
-      // 3) Intentar obtener posición con timeout
+      // 3) Intentar obtener la posición con timeout
       Position pos;
       try {
         pos = await Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.high)
-            .timeout(const Duration(seconds: 5));
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(const Duration(seconds: 5));
       } catch (_) {
-        // Fallback a última conocida o Madrid
+        // Si falla, fallback a última posición conocida o a Madrid
         pos = await Geolocator.getLastKnownPosition() ??
             Position(
               latitude: 40.4168,
@@ -76,14 +80,16 @@ class _MapScreenState extends State<MapScreen> {
       _currentCenter = LatLng(pos.latitude, pos.longitude);
       _locError = null;
 
-      // Esperar al primer frame para mover el mapa, evitando el LateInitializationError
+      // Una vez obtenida la coordenada, movemos el mapa
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _mapController.move(_currentCenter!, 13.0);
+        if (_currentCenter != null) {
+          _mapController.move(_currentCenter!, 13.0);
+        }
       });
     } catch (e) {
       _locError = e.toString();
+      // Si hubo error, centramos en Madrid por defecto
       _currentCenter = LatLng(40.4168, -3.7038);
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _mapController.move(_currentCenter!, 5.0);
       });
@@ -92,11 +98,83 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  /// Carga la lista de incidencias pendientes
+  void _loadPendingIncidents() {
+    setState(() {
+      _pendingIncidents = PendingIncidentsService.instance.all;
+    });
+  }
+
+  void _refreshAll() {
+    _loadPendingIncidents();
+  }
+
+  /// Construye las capas de incidencias: polilíneas, círculos y polígonos
+  List<Widget> _buildPendingLayers() {
+    final List<Widget> hijos = [];
+
+    for (var inc in _pendingIncidents) {
+      switch (inc.tipo) {
+        case TipoIncidencia.calle_cortada:
+          final inicio = inc.inicio!;
+          final fin = inc.fin!;
+          hijos.add(
+            PolylineLayer(
+              polylines: [
+                Polyline(
+                  points: [
+                    LatLng(inicio.latitude, inicio.longitude),
+                    LatLng(fin.latitude, fin.longitude),
+                  ],
+                  strokeWidth: 4,
+                  color: Colors.red,
+                ),
+              ],
+            ),
+          );
+          break;
+
+        case TipoIncidencia.zona_terremoto:
+          hijos.add(
+            CircleLayer(
+              circles: [
+                CircleMarker(
+                  point: inc.centro!,
+                  color: Colors.orange.withOpacity(0.3),
+                  borderColor: Colors.orange,
+                  borderStrokeWidth: 2,
+                  radius: inc.radio!, // en metros
+                ),
+              ],
+            ),
+          );
+          break;
+
+        case TipoIncidencia.inundacion:
+          hijos.add(
+            PolygonLayer(
+              polygons: [
+                Polygon(
+                  points: inc.vertices!,
+                  color: Colors.blue.withOpacity(0.3),
+                  borderColor: Colors.blue,
+                  borderStrokeWidth: 2,
+                ),
+              ],
+            ),
+          );
+          break;
+      }
+    }
+
+    return hijos;
+  }
+
   @override
   Widget build(BuildContext context) {
     const double buttonSize = 48.0;
     const double spacing = 12.0;
-    final Color white = Colors.white;
+    final Color blanco = Colors.white;
     final Color highlight = Colors.grey.withOpacity(0.2);
 
     if (_loadingLocation) {
@@ -106,7 +184,17 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mapa'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Mapa'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Actualizar borradores',
+            onPressed: _refreshAll,
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           FlutterMap(
@@ -121,43 +209,40 @@ class _MapScreenState extends State<MapScreen> {
               },
             ),
             children: [
+              // 1) Capa base (OpenStreetMap)
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.crisis_map_natural',
               ),
-              MarkerLayer(
-                markers: [
-                  if (_currentCenter != null)
+
+              // 2) Marcador de ubicación actual (un punto azul)
+              if (_currentCenter != null)
+                MarkerLayer(
+                  markers: [
                     Marker(
                       point: _currentCenter!,
-                      width: 30,
-                      height: 30,
-                      builder: (_) => const Icon(
+                      width: 40,
+                      height: 40,
+                      builder: (ctx) => const Icon(
                         Icons.my_location,
                         color: Colors.blue,
                         size: 30,
                       ),
                     ),
-                  if (_selectedPosition != null)
-                    Marker(
-                      point: _selectedPosition!,
-                      width: 30,
-                      height: 30,
-                      builder: (_) => const Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 30,
-                      ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
+
+              // 3) Capas de incidencias pendientes (polyline, circle, polygon)
+              ..._buildPendingLayers(),
             ],
           ),
 
-          // Banner superior con error o coordenadas
+          // Si hay error de ubicación, muestra un banner rojo
           if (_locError != null)
             Positioned(
-              top: 8, left: 8, right: 8,
+              top: 8,
+              left: 8,
+              right: 8,
               child: Container(
                 padding: const EdgeInsets.all(8),
                 color: Colors.red.withOpacity(0.8),
@@ -167,28 +252,49 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             )
-          else if (_selectedPosition != null)
+
+          // Si no hay error y no se ha pulsado el mapa, muestra instrucción
+          else if (_selectedPosition == null)
             Positioned(
-              top: 8, left: 8, right: 8,
+              top: 8,
+              left: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.white.withOpacity(0.8),
+                child: const Text(
+                  'Toca en el mapa para elegir ubicación',
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+            )
+
+          // Si se toca en el mapa, muestra las coordenadas seleccionadas
+          else
+            Positioned(
+              top: 8,
+              left: 8,
+              right: 8,
               child: Container(
                 padding: const EdgeInsets.all(8),
                 color: Colors.white.withOpacity(0.8),
                 child: Text(
-                  'Seleccionado: '
+                  'Ubicación seleccionada: '
                   'Lat ${_selectedPosition!.latitude.toStringAsFixed(5)}, '
                   'Lng ${_selectedPosition!.longitude.toStringAsFixed(5)}',
                 ),
               ),
             ),
 
-          // Controles flotantes
+          // Controles flotantes de zoom
           Positioned(
-            right: 16, bottom: 80,
+            right: 16,
+            bottom: 80,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Material(
-                  color: white,
+                  color: blanco,
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
@@ -206,7 +312,7 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 const SizedBox(height: spacing),
                 Material(
-                  color: white,
+                  color: blanco,
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
@@ -222,32 +328,20 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: spacing),
-                Material(
-                  color: white,
-                  shape: const CircleBorder(),
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_horiz, color: Colors.black),
-                    onSelected: (value) {
-                      if (value == 'add') {
-                        Navigator.pushNamed(
-                          context,
-                          '/rellenar-incidencias',
-                        );
-                      }
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                        value: 'add',
-                        child: Text('Rellenar incidencia'),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
         ],
+      ),
+
+      // Botón flotante para "Nueva incidencia"
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/nuevo-informe')
+              .then((_) => _refreshAll());
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Nueva incidencia',
       ),
     );
   }

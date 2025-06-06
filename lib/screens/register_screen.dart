@@ -91,8 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration:
-                    const InputDecoration(labelText: 'Correo electrónico'),
+                decoration: const InputDecoration(labelText: 'Correo electrónico'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Ingresa tu correo';
                   final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');

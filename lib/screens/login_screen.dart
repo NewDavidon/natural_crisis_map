@@ -11,11 +11,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey            = GlobalKey<FormState>();   // Para validar el form
-  final _authService        = AuthService();            // Servicio de Auth
+  final _formKey            = GlobalKey<FormState>();
+  final _authService        = AuthService();
   final _emailController    = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;                              // Estado de carga
+  bool _isLoading = false;
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      // ✔ Ir DIRECTO al mapa, reemplazando la ruta actual
+      // ✔ Ir directo al mapa, reemplazando la ruta actual
       Navigator.pushReplacementNamed(context, '/map');
     } catch (e) {
       _showErrorDialog(e.toString());
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Ingresa tu correo';
-                    if (kDebugMode && v == 'user') return null; // depuración
+                    if (kDebugMode && v == 'demo@demo.com') return null; // depuración
                     final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                     if (!regex.hasMatch(v)) return 'Correo no válido';
                     return null;
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                    if (kDebugMode && v == 'user') return null; // depuración
+                    if (kDebugMode && v == 'demodemo') return null; // depuración
                     if (v.length < 6) return 'Mínimo 6 caracteres';
                     return null;
                   },

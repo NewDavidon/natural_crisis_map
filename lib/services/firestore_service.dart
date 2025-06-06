@@ -17,12 +17,10 @@ class FirestoreService {
   Stream<List<Incidencia>> getIncidencias() {
     return _db
         .collection('incidencias')
-        .orderBy('fechaCreacion', descending: true)
+        .orderBy('fecha', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
-        // Se invierte el orden de los argumentos para coincidir con:
-        // Incidencia.fromMap(Map<String, dynamic> map, String docId)
         return Incidencia.fromMap(
           doc.data(),
           doc.id,
