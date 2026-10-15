@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// Reglas de seguridad de Cloud Firestore para Crisis Map.
+// Publicar con:  firebase deploy --only firestore:rules
+// (o copiándolas en la consola de Firebase → Firestore → Reglas).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function conSesion() {
+      return request.auth != null;
+    }
+
+    // El documento nuevo debe ir firmado con el uid de quien lo crea.
+    function creaComoSiMismo() {
+      return conSesion() && request.resource.data.userId == request.auth.uid;
+    }
+
+    function esAutor() {
+      return conSesion() && resource.data.userId == request.auth.uid;
+    }
+
+    // Al editar no se puede cambiar el autor.
+    function mantieneAutor() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    match /incidencias/{incidenciaId} {
+      allow read: if conSesion();
+      allow create: if creaComoSiMismo();
+      allow update: if esAutor() && mantieneAutor();
+      allow delete: if esAutor();
+
+      // Cualquiera con sesión puede aportar fotos; las borra su autor
+      // o el autor de la incidencia (al eliminarla).
+      match /fotos/{fotoId} {
+        allow read: if conSesion();
+        allow create: if creaComoSiMismo()
+          && request.resource.data.data is string
+          && request.resource.data.data.size() < 1000000;
+        allow delete: if esAutor()
+          || (conSesion()
+              && get(/databases/$(database)/documents/incidencias/$(incidenciaId)).data.userId == request.auth.uid);
+      }
+    }
+
+    match /ayudas/{ayudaId} {
+      allow read: if conSesion();
+      allow create: if creaComoSiMismo();
+      allow update: if esAutor() && mantieneAutor();
+      allow delete: if esAutor();
+    }
+
+    match /donaciones/{donacionId} {
+      allow read: if conSesion();
+      allow create: if creaComoSiMismo();
+      allow update: if esAutor() && mantieneAutor();
+      allow delete: if esAutor();
+    }
+  }
+}

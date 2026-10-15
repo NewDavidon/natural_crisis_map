@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Mapa (tiles), Firebase y enlaces externos -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Ubicación para el mapa y las alertas de cercanía -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
-        android:label="crisis_map_natural"
+        android:label="Crisis Map"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
@@ -23,7 +26,7 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"/>
-                
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -35,14 +38,23 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>
-            
+
     </application>
 
-    <!-- Required to query activities that can process text -->
     <queries>
+        <!-- Required to query activities that can process text -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- url_launcher: llamar a teléfonos de emergencia y abrir webs de donación -->
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

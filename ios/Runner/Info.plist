@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Usamos tu ubicación para mostrarte en el mapa y avisarte de incidencias cercanas.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Necesitamos la cámara para adjuntar fotos a las incidencias.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Necesitamos acceso a tus fotos para adjuntarlas a las incidencias.</string>
 </dict>
 </plist>
